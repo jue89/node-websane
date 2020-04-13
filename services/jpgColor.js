@@ -11,8 +11,7 @@ module.exports = async ({scanDir, scanDirWatch}) => {
 	const sem = qsem(1);
 
 	const c = (src, dst) => sem.limit(() => convert(src, dst, [
-		'-level', '5%,90%',
-		'-sharpen', '0x1',
+		'-level', '0%,85%',
 		'-quality', '75'
 	], scanDir));
 
@@ -20,7 +19,7 @@ module.exports = async ({scanDir, scanDirWatch}) => {
 	scanDirWatch.on('add', (filePath) => {
 		if (filePath.substr(-5) !== '.tiff') return;
 		c(filePath, filePath + '.color.jpg')
-			.then(() => console.log('jpgColor: convert', filePath))
+			.then((dst) => console.log('jpgColor:', dst))
 			.catch((err) => console.error('jpgColor: error', err));
 	});
 };

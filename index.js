@@ -24,7 +24,8 @@ async function start (args) {
 const scanDir = process.env.SCANDIR || 'scans';
 const scannerType = process.env.SCANNERTYPE || 'ix500';
 const scanArgs = require(`./scanner/${scannerType}.js`);
-start({scanDir, scannerType, scanArgs}).then((exit) => {
+const uiPort = process.env.UIPORT ? parseInt(process.env.UIPORT) : 8081;
+start({scanDir, scannerType, scanArgs, uiPort}).then((exit) => {
 	// call exit handler on signals TERM and INT
 	process.on('SIGTERM', exit).on('SIGINT', exit);
 }).catch((err) => console.error(err));
