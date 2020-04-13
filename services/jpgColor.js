@@ -13,15 +13,14 @@ module.exports = async ({scanDir, scanDirWatch}) => {
 	const c = (src, dst) => sem.limit(() => convert(src, dst, [
 		'-level', '5%,90%',
 		'-sharpen', '0x1',
-		'-resize', '1500x1500',
-		'-quality', '55'
+		'-quality', '75'
 	], scanDir));
 
 	// create previews once a scan appear
 	scanDirWatch.on('add', (filePath) => {
 		if (filePath.substr(-5) !== '.tiff') return;
-		c(filePath, filePath + '.preview.jpg')
-			.then(() => console.log('preview: convert', filePath))
-			.catch((err) => console.error('preview: error', err));
+		c(filePath, filePath + '.color.jpg')
+			.then(() => console.log('jpgColor: convert', filePath))
+			.catch((err) => console.error('jpgColor: error', err));
 	});
 };
