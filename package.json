@@ -1,0 +1,26 @@
+{
+  "name": "websane",
+  "version": "0.0.0",
+  "description": "Web Frontend for SANE Scanner",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jue89/node-websane.git"
+  },
+  "keywords": [
+    "sane",
+    "scanner"
+  ],
+  "author": "Juergen Fitschen <me@jue.yt>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jue89/node-websane/issues"
+  },
+  "homepage": "https://github.com/jue89/node-websane#readme",
+  "dependencies": {
+    "qsem": "^1.0.0"
+  }
+}
