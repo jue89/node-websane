@@ -24,6 +24,14 @@ const fetchScanMeta = async (scan) => {
 	return {vmin, vmax, vdiff, smin, smax, sdiff, skip, colorPage};
 }
 
+const reqDelete = async (body) => {
+	const rsp = await fetch('/actions/delete', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(body)
+	});
+}
+
 class ScannerApp extends LitElement {
 	static get properties () {
 		return {
@@ -135,6 +143,20 @@ class ScannerApp extends LitElement {
 		this.scanUpdate(this.scanSelected, {rotate});
 	}
 
+	deleteSelectedScans () {
+		const del = [];
+		for (let i = 0; i <= this.scanSelected; i++) {
+			if (this.scans[i].deleted) continue;
+			del.push(i);
+		}
+		if (del.length === 0) return;
+		if (!window.confirm(`Do you really want to delete ${del.length} scans?`)) return;
+		reqDelete(del.map((idx) => {
+			this.scanUpdate(idx, {deleted: true});
+			return `${this.scans[idx].batch}/${this.scans[idx].id}`;
+		}));
+	}
+
 	onKeydown (e) {
 		if (e.key === 'ArrowDown' && e.altKey) {
 			if (!this.scanSwap(this.scanSelected, this.scanSelected + 1)) return;
@@ -153,6 +175,8 @@ class ScannerApp extends LitElement {
 		} else if (e.key === ' ') {
 			const skip = !this.scans[this.scanSelected].skip;
 			this.scanUpdate(this.scanSelected, {skip});
+		} else if (e.key === 'Delete') {
+			this.deleteSelectedScans();
 		} else {
 			return;
 		}
