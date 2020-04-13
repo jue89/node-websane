@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/jue89/node-websane#readme",
   "dependencies": {
+    "jimp": "^0.10.1",
     "qsem": "^1.0.0"
   }
 }
