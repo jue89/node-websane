@@ -79,7 +79,7 @@ class ScannerApp extends LitElement {
 		info.id = id;
 
 		// find index of the new scan object
-		let idx = this.scans.findIndex((s) => s.batch > batch && s.id > id);
+		let idx = this.scans.findIndex((s) => s.batch >= batch && s.id > id);
 		if (idx === -1) idx = this.scans.length;
 
 		// insert new object
@@ -223,7 +223,7 @@ class ScannerApp extends LitElement {
 			<div class="scanner-main container-fluid" tabindex="-1" @keydown="${this.onKeydown}">
 				<div class="row flex-xl-nowrap">
 					<div class="scanner-sidebar">
-						${this.scans.filter((s) => !s.deleted).map((scan, scanIdx) => html`
+						${this.scans.map((scan, scanIdx) => (!scan.deleted) ? html`
 							<!-- batch heading -->
 							${(scan.batch !== batch) ? html`<p>${batch = scan.batch}</p>` : ''}
 
@@ -235,7 +235,7 @@ class ScannerApp extends LitElement {
 								.selected="${scanIdx <= this.scanSelected}"
 								@click="${() => {this.scanSelected = scanIdx;}}"
 							>`}
-						`)}
+						` : '')}
 					</div>
 					<div class="scanner-detail">
 						${(this.scans[this.scanSelected] && !this.scans[this.scanSelected].deleted) ? html`
