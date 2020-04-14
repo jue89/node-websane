@@ -12,7 +12,7 @@ module.exports = async ({scanDir, scanDirWatch}) => {
 
 	const c = (src, dst) => sem.limit(() => convert(src, dst, [
 		'-level', '0%,85%',
-		'-resize', '1500x1500',
+		'-resize', '1000x1000',
 		'-quality', '55'
 	], scanDir));
 

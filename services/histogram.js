@@ -4,7 +4,7 @@ const path = require('path');
 const qsem = require('qsem');
 
 module.exports = ({scanDir, scanDirWatch}) => {
-	const sem = qsem(1);
+	const sem = qsem(2);
 
 	const gen = (src, dst) => sem.limit(() => new Promise((resolve) => {
 		const proc = childProcess.fork(path.join(__dirname, '../lib/histogram-worker.js'), {cwd: scanDir});
