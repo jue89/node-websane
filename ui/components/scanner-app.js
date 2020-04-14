@@ -24,13 +24,11 @@ const fetchScanMeta = async (scan) => {
 	return {vmin, vmax, vdiff, smin, smax, sdiff, skip, colorPage};
 }
 
-const reqDelete = async (body) => {
-	const rsp = await fetch('/actions/delete', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(body)
-	});
-}
+const reqAction = (action, body) =>  fetch('/actions/' + action, {
+	method: 'POST',
+	headers: { 'Content-Type': 'application/json' },
+	body: JSON.stringify(body)
+});
 
 class ScannerApp extends LitElement {
 	static get properties () {
@@ -143,18 +141,42 @@ class ScannerApp extends LitElement {
 		this.scanUpdate(this.scanSelected, {rotate});
 	}
 
-	deleteSelectedScans () {
+	async deleteSelectedScans (dontAsk = false) {
 		const del = [];
 		for (let i = 0; i <= this.scanSelected; i++) {
 			if (this.scans[i].deleted) continue;
 			del.push(i);
 		}
 		if (del.length === 0) return;
-		if (!window.confirm(`Do you really want to delete ${del.length} scans?`)) return;
-		reqDelete(del.map((idx) => {
-			this.scanUpdate(idx, {deleted: true});
-			return `${this.scans[idx].batch}/${this.scans[idx].id}`;
-		}));
+		if (!dontAsk && !window.confirm(`Do you really want to delete ${del.length} scans?`)) return;
+		await reqAction('delete', {pages: del.map((idx) => {
+			return {
+				p: `${this.scans[idx].batch}/${this.scans[idx].id}`,
+				r: (this.scans[idx].rotate || 0) * (-1)
+			};
+		})});
+		this.scanSelected++;
+	}
+
+	async pdfSelectedScans () {
+		const pdf = [];
+		for (let i = 0; i <= this.scanSelected; i++) {
+			if (this.scans[i].deleted) continue;
+			if (this.scans[i].skip) continue;
+			pdf.push(i);
+		}
+		if (pdf.length === 0) return;
+		const rsp = await reqAction('pdf', {pages: pdf.map((idx) => {
+			return {
+				p: `${this.scans[idx].batch}/${this.scans[idx].id}`,
+				r: (this.scans[idx].rotate || 0) * (-1)
+			};
+		})});
+		const filename = rsp.headers.get('content-disposition')
+			.replace(/attachment; filename="(.*)"/, '$1')
+		const blob = await rsp.blob();
+		saveAs(blob, filename);
+		this.deleteSelectedScans(true);
 	}
 
 	onKeydown (e) {
@@ -177,6 +199,8 @@ class ScannerApp extends LitElement {
 			this.scanUpdate(this.scanSelected, {skip});
 		} else if (e.key === 'Delete') {
 			this.deleteSelectedScans();
+		} else if (e.key === 'Enter') {
+			this.pdfSelectedScans();
 		} else {
 			return;
 		}

@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@polymer/lit-element": "^0.7.1",
-    "bootstrap": "^4.4.1"
+    "bootstrap": "^4.4.1",
+    "file-saver": "^2.0.2"
   }
 }

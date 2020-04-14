@@ -5,10 +5,16 @@ const util = require('util');
 const express = require('express');
 const bodyParser = require('body-parser');
 const socketio = require('socket.io');
+const qsem = require('qsem');
 const esModuleMiddleware = require('@adobe/es-modules-middleware');
 const exec = require('../lib/exec.js');
+const {PDFDocument, degrees, toRadians} = require('pdf-lib');
 
 const unlink = util.promisify(fs.unlink);
+const readFile = util.promisify(fs.readFile);
+
+const PPI = 72;
+const DPI = 300;
 
 module.exports = ({scanDir, scanDirWatch, uiPort}) => {
 	const app = express();
@@ -45,19 +51,66 @@ module.exports = ({scanDir, scanDirWatch, uiPort}) => {
 		'/node_modules': path.join(__dirname, '../ui/node_modules')
 	}}));
 
+	const actionSem = qsem(1);
+
 	// delete action
-	app.post('/actions/delete', (req, rsp) => {
-		Promise.all(scanDirWatch.ls().filter((p) => {
-			for (let needle of req.body) {
-				if (p.substr(0, needle.length) === needle) return true;
+	app.post('/actions/delete', (req, rsp) => actionSem.limit(async () => {
+		const deleteFiles = scanDirWatch.ls().filter((filePath) => {
+			for (const {p} of req.body.pages) {
+				if (filePath.substr(0, p.length) === p) return true;
 			}
-		}).map((p) => unlink(path.join(scanDir, p)))).then(() => {
-			rsp.end();
-		}).catch((err) => {
-			rsp.status(500).end();
-			console.error(err);
 		});
-	});
+		for (const filePath of deleteFiles) {
+			await unlink(path.join(scanDir, filePath));
+		}
+	}).catch((err) => {
+		console.error(err);
+		rsp.status(500);
+	}).then(() => {
+		rsp.end();
+	}));
+
+	// PDF action
+	app.post('/actions/pdf', (req, rsp) => actionSem.limit(async () => {
+		const pdfDoc = await PDFDocument.create();
+		const addPage = async (filePath, resolution, rotate) => {
+			const imgData = await readFile(path.join(scanDir, filePath));
+			const img = await pdfDoc.embedJpg(imgData);
+			const width = img.width / resolution * PPI;
+			const height = img.height / resolution * PPI;
+			const pBase = [
+				[    0,      0],
+				[width,      0],
+				[width, height],
+				[    0, height]
+			];
+			const cos = Math.cos(toRadians(rotate));
+			const sin = Math.sin(toRadians(rotate));
+			const pRotated = pBase.map(([x, y]) => [x * cos - y * sin, y * cos + x * sin]);
+			const [minx, miny] = pRotated.reduce(([minx, miny], [x, y]) => [Math.min(x, minx), Math.min(y, miny)], [Number.MAX_VALUE, Number.MAX_VALUE]);
+			const pTranslated = pRotated.map(([x, y]) => [x - minx, y - miny]);
+			const [pwidth, pheight] = pTranslated.reduce(([maxx, maxy], [x, y]) => [Math.max(x, maxx), Math.max(y, maxy)], [Number.MIN_VALUE, Number.MIN_VALUE]);
+			const [x, y] = pTranslated[0];
+			pdfDoc.addPage([pwidth, pheight]).drawImage(img, {x, y, width, height, rotate});
+		};
+
+		// add pages
+		const {pages} = req.body;
+		for (const {p, r} of pages) {
+			const filePath = p + '.tiff.color.jpg';
+			await scanDirWatch.existance(filePath);
+			await addPage(filePath, DPI, degrees(r));
+		}
+
+		// download pdf
+		rsp.attachment('out.pdf').write(Buffer.from(await pdfDoc.save()));
+	}).catch((err) => {
+		console.error(err);
+		rsp.status(500);
+	}).then(() => {
+		rsp.end();
+	}));
+
 
 	server.listen(uiPort);
 
