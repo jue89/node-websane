@@ -11,6 +11,7 @@
   "dependencies": {
     "@polymer/lit-element": "^0.7.1",
     "bootstrap": "^4.4.1",
-    "file-saver": "^2.0.2"
+    "file-saver": "^2.0.2",
+    "open-iconic": "^1.1.1"
   }
 }

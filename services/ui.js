@@ -95,7 +95,10 @@ module.exports = ({scanDir, scanDirWatch, uiPort}) => {
 		};
 
 		// add pages
-		const {pages} = req.body;
+		const {pages, author, date, title} = req.body;
+		if (date) pdfDoc.setCreationDate(new Date(date));
+		if (author) pdfDoc.setAuthor(author);
+		if (title) pdfDoc.setTitle(title);
 		for (const {p, r} of pages) {
 			const filePath = p + '.tiff.color.jpg';
 			await scanDirWatch.existance(filePath);
@@ -103,7 +106,12 @@ module.exports = ({scanDir, scanDirWatch, uiPort}) => {
 		}
 
 		// download pdf
-		rsp.attachment('out.pdf').write(Buffer.from(await pdfDoc.save()));
+		const filenameParts = [];
+		if (date) filenameParts.push(new Date(date).toISOString().substr(0, 10));
+		if (author) filenameParts.push(author);
+		if (title) filenameParts.push(title)
+		if (filenameParts.length === 0) filenameParts.push(new Date().getTime());
+		rsp.attachment(filenameParts.join(' - ') + '.pdf').write(Buffer.from(await pdfDoc.save()));
 	}).catch((err) => {
 		console.error(err);
 		rsp.status(500);
