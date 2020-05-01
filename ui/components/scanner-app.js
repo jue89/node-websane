@@ -210,6 +210,8 @@ class ScannerApp extends LitElement {
 			this.pdfSelectedScans();
 		} else if (e.key === 'F9') {
 			this.shadowRoot.querySelector('#iptDate').focus();
+		} else if (e.key === 'Home') {
+			reqAction('scan');
 		} else {
 			return;
 		}

@@ -119,6 +119,9 @@ module.exports = ({scanDir, scanDirWatch, uiPort}) => {
 		rsp.end();
 	}));
 
+	app.post('/actions/scan', (req, rsp) => {
+		process.kill(process.pid, 'SIGUSR1');
+	});
 
 	server.listen(uiPort);
 
