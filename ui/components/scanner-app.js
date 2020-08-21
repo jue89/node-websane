@@ -1,6 +1,7 @@
 import {LitElement, html} from '@polymer/lit-element';
 import './scan-preview.js';
 import './scan-show.js';
+import './input-hint.js';
 
 const THRESHOLD = 0.0001;
 
@@ -259,37 +260,42 @@ class ScannerApp extends LitElement {
 				}
 			</style>
 			<nav class="navbar navbar-expand navbar-dark bg-dark fixed-top">
-				<a class="navbar-brand mr-auto" href="#">Websane</a>
+				<a class="navbar-brand mr-auto" href="#" tabindex="-1">Websane</a>
 				<form class="form-row scanner-meta-data" style="width: 100%">
 					<div class="col-3 col-lg-2 input-group">
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="oi oi-calendar"></i></span>
 						</div>
-						<input type="date" class="form-control" id="iptDate" placeholder="Date" tabindex="1" @keydown="${(e) => {
-							this.date = e.path[0].value ? new Date(e.path[0].value).getTime() : undefined;
+						<input type="date" class="form-control" id="iptDate" placeholder="Date" tabindex="1" @input="${(e) => {
+							const value = (e.path || e.composedPath())[0].value;
+							this.date = value ? new Date(value).getTime() : undefined;
 						}}">
 					</div>
 
-					<div class="col-3 col-lg-2 input-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"><i class="oi oi-person"></i></span>
-						</div>
-						<input type="text" class="form-control" id="iptAuthor" placeholder="Communication Partner" tabindex="2" @keydown="${(e) => {
-							this.author = e.path[0].value;
-						}}">
-					</div>
+					<input-hint
+						class="col-3 col-lg-2"
+						icon="oi-person"
+						placeholder="Communication Partner"
+						maxHints="10"
+						tabindex="2"
+						@change="${(e) => {
+							this.author = (e.path || e.composedPath())[0].value;
+						}}"
+					></input-hint>
 
-					<div class="col-6 col-lg-8 input-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"><i class="oi oi-file"></i></span>
-						</div>
-						<input type="text" class="form-control" id="iptTitle" placeholder="Title" tabindex="3" @keydown="${(e) => {
-							this.title = e.path[0].value;
-						}}">
-					</div>
+					<input-hint
+						class="col-6 col-lg-8"
+						icon="oi-file"
+						placeholder="Title"
+						maxHints="10"
+						tabindex="3"
+						@change="${(e) => {
+							this.title = (e.path || e.composedPath())[0].value;
+						}}"
+					></input-hint>
 				</form>
 			</nav>
-			<div class="scanner-main container-fluid" tabindex="4" @keydown="${this.onKeydown}">
+			<div class="scanner-main container-fluid" tabindex="4" autofocus @keydown="${this.onKeydown}">
 				<div class="row flex-xl-nowrap">
 					<div class="scanner-sidebar">
 						${this.scans.map((scan, scanIdx) => (!scan.deleted) ? html`
