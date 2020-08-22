@@ -71,6 +71,10 @@ class ScannerApp extends LitElement {
 		this.scanSelected = 0;
 	}
 
+	firstUpdated () {
+		this.shadowRoot.querySelector('#main').focus();
+	}
+
 	scanFind (batch, id) {
 		return this.scans.findIndex((s) => s.batch === batch && s.id === id);
 	}
@@ -295,7 +299,7 @@ class ScannerApp extends LitElement {
 					></input-hint>
 				</form>
 			</nav>
-			<div class="scanner-main container-fluid" tabindex="4" autofocus @keydown="${this.onKeydown}">
+			<div class="scanner-main container-fluid" id="main" tabindex="4" @keydown="${this.onKeydown}">
 				<div class="row flex-xl-nowrap">
 					<div class="scanner-sidebar">
 						${this.scans.map((scan, scanIdx) => (!scan.deleted) ? html`
