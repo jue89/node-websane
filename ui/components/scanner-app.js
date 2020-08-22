@@ -267,10 +267,10 @@ class ScannerApp extends LitElement {
 			<link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css">
 			<link rel="stylesheet" href="node_modules/open-iconic/font/css/open-iconic-bootstrap.min.css">
 			<style>
-				.scanner-main {
+				#main {
 					margin-top: 56px;
 				}
-				.scanner-sidebar {
+				#sidebar {
 					position: sticky;
 					overflow-x: hidden;
 					overflow-y: scroll;
@@ -279,14 +279,14 @@ class ScannerApp extends LitElement {
 					border-right: 1px solid rgba(0,0,0,.1);
 					width: 320px;
 				}
-				.scanner-detail {
+				#detail {
 					position: sticky;
 					overflow: hidden;
 					max-height: calc(100vh - 56px);
 					min-height: calc(100vh - 56px);
 					width: calc(100vw - 320px);
 				}
-				.scanner-meta-data {
+				#metadata {
 					width: calc(100vw - 160px);
 					min-width: calc(100vw - 160px);
 					max-width: calc(100vw - 160px);
@@ -303,7 +303,7 @@ class ScannerApp extends LitElement {
 			</style>
 			<nav class="navbar navbar-expand navbar-dark bg-dark fixed-top">
 				<a class="navbar-brand mr-auto" href="#" tabindex="-1">Websane</a>
-				<form class="form-row scanner-meta-data" style="width: 100%">
+				<form id="metadata" class="form-row" style="width: 100%">
 					<div class="col-3 col-lg-2 input-group">
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="oi oi-calendar"></i></span>
@@ -339,9 +339,9 @@ class ScannerApp extends LitElement {
 					></input-hint>
 				</form>
 			</nav>
-			<div class="scanner-main container-fluid" id="main" tabindex="4" @keydown="${this.onKeydown}">
+			<div id="main" class="container-fluid" tabindex="4" @keydown="${this.onKeydown}">
 				<div class="row flex-xl-nowrap">
-					<div class="scanner-sidebar">
+					<div id="sidebar">
 						${this.scans.map((scan, scanIdx) => (!scan.deleted) ? html`
 							<!-- batch heading -->
 							${(scan.batch !== batch) ? html`<p>${batch = scan.batch}</p>` : ''}
@@ -356,7 +356,7 @@ class ScannerApp extends LitElement {
 							>`}
 						` : '')}
 					</div>
-					<div class="scanner-detail">
+					<div id="detail">
 						${(this.scans[this.scanSelected] && !this.scans[this.scanSelected].deleted) ? html`
 							<scan-show .scan="${this.scans[this.scanSelected]}"></scan-show>
 						` : ''}
