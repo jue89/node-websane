@@ -41,7 +41,9 @@ class ScannerApp extends LitElement {
 			title: {type: String},
 			hints: {type: Array},
 			hintsAuthor: {type: Array},
-			hintsTitle: {type: Array}
+			hintsTitle: {type: Array},
+			selectedMain: {type: Boolean},
+			selectedMeta: {type: Boolean}
 		};
 	}
 
@@ -251,9 +253,9 @@ class ScannerApp extends LitElement {
 			this.deleteSelectedScans();
 		} else if (e.key === 'Enter') {
 			this.pdfSelectedScans();
-		} else if (e.key === 'F9') {
+		} else if (e.key === 'm') {
 			this.shadowRoot.querySelector('#iptDate').focus();
-		} else if (e.key === 'Home') {
+		} else if (e.key === 's') {
 			reqAction('scan');
 		} else {
 			return;
@@ -269,27 +271,59 @@ class ScannerApp extends LitElement {
 			<style>
 				#main {
 					margin-top: 56px;
+					margin-bottom: 32px;
 				}
 				#sidebar {
 					position: sticky;
 					overflow-x: hidden;
 					overflow-y: scroll;
-					max-height: calc(100vh - 56px);
-					min-height: calc(100vh - 56px);
+					max-height: calc(100vh - 56px - 32px);
+					min-height: calc(100vh - 56px - 32px);
 					border-right: 1px solid rgba(0,0,0,.1);
 					width: 320px;
 				}
 				#detail {
 					position: sticky;
 					overflow: hidden;
-					max-height: calc(100vh - 56px);
-					min-height: calc(100vh - 56px);
+					max-height: calc(100vh - 56px - 32px);
+					min-height: calc(100vh - 56px - 32px);
 					width: calc(100vw - 320px);
 				}
 				#metadata {
 					width: calc(100vw - 160px);
 					min-width: calc(100vw - 160px);
 					max-width: calc(100vw - 160px);
+				}
+				#footer {
+					position: fixed;
+					bottom: 0px;
+					left: 0px;
+					right: 0px;
+					background: var(--gray-dark);
+					max-height: 32px;
+					min-height: 32px;
+					padding: 5px 15px 0px 15px;
+					display: flex;
+					flex-wrap: nowrap;
+					justify-content: space-between;
+					font-size: 0.8em;
+				}
+				#footer span {
+					color: var(--light);
+				}
+				#footer span.key {
+					background: var(--light);
+					color: var(--gray-dark);
+					width: 24px;
+					text-align: center;
+					display: inline-block;
+					border-radius: 5px;
+				}
+				#footer span.key-lg {
+					with: 32px;
+				}
+				#footer span.item {
+					margin-left: 20px;
 				}
 				p {
 					padding-top: 32px;
@@ -308,10 +342,19 @@ class ScannerApp extends LitElement {
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="oi oi-calendar"></i></span>
 						</div>
-						<input type="date" class="form-control" id="iptDate" placeholder="Date" tabindex="1" @input="${(e) => {
-							const value = (e.path || e.composedPath())[0].value;
-							this.date = value ? new Date(value).getTime() : undefined;
-						}}">
+						<input
+							type="date"
+							class="form-control"
+							id="iptDate"
+							placeholder="Date"
+							tabindex="1"
+							@input="${(e) => {
+								const value = (e.path || e.composedPath())[0].value;
+								this.date = value ? new Date(value).getTime() : undefined;
+							}}"
+							@focus="${() => {this.selectedMeta = true;}}"
+							@blur="${() => {this.selectedMeta = false;}}"
+						>
 					</div>
 
 					<input-hint
@@ -324,6 +367,8 @@ class ScannerApp extends LitElement {
 						@change="${(e) => {
 							this.author = (e.path || e.composedPath())[0].value;
 						}}"
+						@focus="${() => {this.selectedMeta = true;}}"
+						@blur="${() => {this.selectedMeta = false;}}"
 					></input-hint>
 
 					<input-hint
@@ -336,10 +381,19 @@ class ScannerApp extends LitElement {
 						@change="${(e) => {
 							this.title = (e.path || e.composedPath())[0].value;
 						}}"
+						@focus="${() => {this.selectedMeta = true;}}"
+						@blur="${() => {this.selectedMeta = false;}}"
 					></input-hint>
 				</form>
 			</nav>
-			<div id="main" class="container-fluid" tabindex="4" @keydown="${this.onKeydown}">
+			<div
+				id="main"
+				class="container-fluid"
+				tabindex="4"
+				@keydown="${this.onKeydown}"
+				@focus="${() => {this.selectedMain = true;}}"
+				@blur="${() => {this.selectedMain = false;}}"
+			>
 				<div class="row flex-xl-nowrap">
 					<div id="sidebar">
 						${this.scans.map((scan, scanIdx) => (!scan.deleted) ? html`
@@ -362,6 +416,27 @@ class ScannerApp extends LitElement {
 						` : ''}
 					</div>
 				</div>
+			</div>
+			<div id="footer">
+				<span>${this.scans.filter((s, n) => n <= this.scanSelected && !s.deleted && !s.skip).length} of ${this.scans.filter((s) => !s.deleted).length} scans selected</span>
+				${(this.selectedMain) ? html`
+					<span id="help-main">
+						<span class="item"><span class="key">S</span> Scan</span>
+						<span class="item"><span class="key">M</span> Edit Metadata</span>
+						<span class="item"><span class="key">🠗</span> / <span class="key">🠕</span> (De-)select pages</span>
+						<span class="item"><span class="key">🠔</span> / <span class="key">🠖</span> Rotate page</span>
+						<span class="item"><span class="key key-lg">Alt</span>+<span class="key">🠗</span> / <span class="key key-lg">Alt</span>+<span class="key">🠕</span> Swap pages</span>
+						<span class="item"><span class="key key-lg">↵</span> Create PDF</span>
+						<span class="item"><span class="key key-lg">Del</span> Remove pages</span>
+					</span>
+				` : ''}
+				${(this.selectedMeta) ? html`
+					<span id="help-main">
+						<span class="item"><span class="key">🠗</span> / <span class="key">🠕</span> Navigate hints</span>
+						<span class="item"><span class="key key-lg">↵</span> Apply selected hint</span>
+						<span class="item"><span class="key key-lg">⇥</span> Next field</span>
+					</span>
+				` : ''}
 			</div>
 		`;
 	}
