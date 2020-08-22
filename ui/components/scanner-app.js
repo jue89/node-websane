@@ -38,7 +38,10 @@ class ScannerApp extends LitElement {
 			scanSelected: {type: Number},
 			date: {type: Number},
 			author: {type: String},
-			title: {type: String}
+			title: {type: String},
+			hints: {type: Array},
+			hintsAuthor: {type: Array},
+			hintsTitle: {type: Array}
 		};
 	}
 
@@ -69,10 +72,38 @@ class ScannerApp extends LitElement {
 		};
 		this.scans = [];
 		this.scanSelected = 0;
+		this.hints = JSON.parse(localStorage.getItem('hints') || '[]');
 	}
 
 	firstUpdated () {
 		this.shadowRoot.querySelector('#main').focus();
+	}
+
+	updated (changedProperties) {
+		if (changedProperties.has('hints')) {
+			this.hintsAuthor = this.hints.map(([author, title]) => ({hint: author, prio: 0})).sort((a, b) => {
+				if (a.hint > b.hint) return 1;
+				if (a.hint < b.hint) return -1;
+				return 0;
+			}).filter((h, n, arr) => {
+				return !n || h.hint !== arr[n - 1].hint;
+			});
+
+			this.hintsTitle = this.hints.map(([author, title]) => ({hint: title, author: author, prio: 0})).sort((a, b) => {
+				if (a.hint > b.hint) return 1;
+				if (a.hint < b.hint) return -1;
+				return 0;
+			}).filter((h, n, arr) => {
+				return !n || h.hint !== arr[n - 1].hint;
+			});
+		}
+
+		if (changedProperties.has('author')) {
+			this.hintsTitle = this.hintsTitle.map((h) => {
+				h.prio = (h.author == this.author) ? 1 : 0;
+				return h;
+			});
+		}
 	}
 
 	scanFind (batch, id) {
@@ -189,6 +220,13 @@ class ScannerApp extends LitElement {
 		const blob = await rsp.blob();
 		saveAs(blob, filename);
 		this.deleteSelectedScans(true);
+		this.addHint(this.author, this.title);
+	}
+
+	addHint (author, title) {
+		if (!author && !title) return;
+		this.hints = [...this.hints, [author, title]];
+		localStorage.setItem('hints', JSON.stringify(this.hints));
 	}
 
 	onKeydown (e) {
@@ -282,6 +320,7 @@ class ScannerApp extends LitElement {
 						placeholder="Communication Partner"
 						maxHints="10"
 						tabindex="2"
+						.hints="${this.hintsAuthor}"
 						@change="${(e) => {
 							this.author = (e.path || e.composedPath())[0].value;
 						}}"
@@ -293,6 +332,7 @@ class ScannerApp extends LitElement {
 						placeholder="Title"
 						maxHints="10"
 						tabindex="3"
+						.hints="${this.hintsTitle}"
 						@change="${(e) => {
 							this.title = (e.path || e.composedPath())[0].value;
 						}}"
