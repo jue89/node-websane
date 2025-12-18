@@ -7,7 +7,6 @@ const bodyParser = require('body-parser');
 const socketio = require('socket.io');
 const qsem = require('qsem');
 const esModuleMiddleware = require('@adobe/es-modules-middleware');
-const exec = require('../lib/exec.js');
 const {PDFDocument, degrees, toRadians} = require('pdf-lib');
 
 const unlink = util.promisify(fs.unlink);

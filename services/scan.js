@@ -6,9 +6,11 @@ const exec = require('../lib/exec.js');
 
 const mkdir = util.promisify(fs.mkdir);
 
+const bin = process.env.SCANIMAGE_BIN || 'scanimage';
+
 module.exports = async ({scanDir, scanArgs}) => {
 	// check if scanimage executable is present
-	await exec('scanimage', ['-V'], __dirname);
+	await exec(bin, ['-V'], __dirname);
 
 	// extend scan args by mandatory fields
 	scanArgs = [
@@ -25,7 +27,7 @@ module.exports = async ({scanDir, scanArgs}) => {
 		console.log('scan: request');
 		const dir = path.join(scanDir, new Date().toISOString().replace(/:/g, '-'));
 		await mkdir(dir);
-		await exec('scanimage', scanArgs, dir);
+		await exec(bin, scanArgs, dir);
 	}).catch((err) => console.error('scan: error', err)));
 
 	// some fake interval to prevent the appliation from exiting
