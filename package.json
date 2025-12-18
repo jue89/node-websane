@@ -2,7 +2,9 @@
   "name": "websane",
   "version": "0.0.0",
   "description": "Web Frontend for SANE Scanner",
-  "main": "index.js",
+  "bin": {
+    "websane": "index.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
