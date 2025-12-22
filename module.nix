@@ -17,14 +17,12 @@
       default = "/tmp/scans";
     };
   };
+  websane = import ./websane pkgs;
+  batch-scan = import ./batch-scan pkgs;
 in {
   options.services.websane = opts;
 
   config = cfg.enable {
-    nixpkgs.overlays = [
-      import ./overlay.nix
-    ];
-
     systemd.services = {
       websane = {
         environment = {
@@ -33,7 +31,7 @@ in {
           CONVERT_BIN = "${pkgs.imagemagick}/bin/convert";
           SCANDIR = cfg.scandir;
         };
-        script = "${pkgs.websane}/bin/websane";
+        script = "${websane}/bin/websane";
       };
 
       batch-scan = {
@@ -42,7 +40,7 @@ in {
           SCANNER_OPTS = "resolution=300,page-height=297.0,mode=Color,source=ADF Duplex,page-width=205";
           SCANNER_BUTTON = "scan";
         };
-        script = "${pkgs.batch-scan}/bin/batch-scan";
+        script = "${batch-scan}/bin/batch-scan";
         serviceConfig.WorkingDirectory = "/tmp/scans";
       };
     };
