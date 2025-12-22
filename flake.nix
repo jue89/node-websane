@@ -8,7 +8,7 @@
     pkgs = nixpkgs.legacyPackages.${system};
   in {
     packages = rec {
-      websane = import ./. pkgs;
+      websane = import ./websane pkgs;
       default = websane;
     };
   });

@@ -1,3 +1,3 @@
 final: prev: {
-  websane: import ./. final;
+  websane: import ./websane final;
 }
