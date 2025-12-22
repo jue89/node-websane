@@ -20,11 +20,11 @@
 in {
   options.services.websane = opts;
 
-  config = {
+  config = cfg.enable {
     nixpkgs.overlays = [
       import ./overlay.nix
     ];
-  } // mkIf cfg.enable {
+
     systemd.services = {
       websane = {
         environment = {
