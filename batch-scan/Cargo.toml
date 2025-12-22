@@ -1,0 +1,9 @@
+[package]
+name = "batch-scan"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+sane-scan = { git = "https://github.com/jue89/sane-scan.git", branch = "main" }
+signal-hook = "0.3.18"
+tiff = "0.10.3"

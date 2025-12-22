@@ -9,6 +9,7 @@
   in {
     packages = rec {
       websane = import ./websane pkgs;
+      batch-scan = import ./batch-scan pkgs;
       default = websane;
     };
   });
