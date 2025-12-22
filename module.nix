@@ -22,7 +22,7 @@
 in {
   options.services.websane = opts;
 
-  config = cfg.enable {
+  config = mkIf cfg.enable {
     systemd.services = {
       websane = {
         environment = {
