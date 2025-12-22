@@ -101,12 +101,20 @@ fn main() {
         let mut scan = dev.start_scan();
 
         loop {
-            let Ok(mut image) = scan.next_image() else {
-                break;
+            let mut image = match scan.next_image() {
+                Ok(img) => img,
+                Err(e) => {
+                    println!("{:?}", e);
+                    break;
+                }
             };
 
-            let Ok(data) = image.read_to_vec() else {
-                break;
+            let mut data = match image.read_to_vec() {
+                Ok(data) => data,
+                Err(e) => {
+                    println!("{:?}", e);
+                    break;
+                }
             };
 
             if data.is_empty() {
