@@ -26,7 +26,7 @@ in {
     systemd.services = {
       websane = {
         environment = {
-          UIPORT = cfg.port;
+          UIPORT = toString cfg.port;
           SCANIMAGE_BIN = "${pkgs.sane-backends}/bin/scanimage";
           CONVERT_BIN = "${pkgs.imagemagick}/bin/convert";
           SCANDIR = cfg.scandir;
