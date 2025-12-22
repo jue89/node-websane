@@ -21,8 +21,8 @@ in {
   options.services.websane = opts;
 
   config = mkIf cfg.enable {
-    systemd = {
-      services.websane = {
+    systemd.services = {
+      websane = {
         environment = {
           UIPORT = cfg.port;
           SCANIMAGE_BIN = "${pkgs.sane-backends}/bin/scanimage";
@@ -31,6 +31,16 @@ in {
         };
         script = "${pkgs.websane}/bin/websane";
       };
+
+      batch-scan = {
+        environment = {
+          SCANNER_NAME = "fujitsu:ScanSnap iX500:53474";
+          SCANNER_OPTS = "resolution=300,page-height=297.0,mode=Color,source=ADF Duplex,page-width=205"
+          SCANNER_BUTTON = "scan";
+        }
+        script = "${pkgs.batch-scan}/bin/batch-scan";
+        serviceConfig.WorkingDirectory = "/tmp/scans";
+      }
     };
 
     hardware.sane.enable = true;
