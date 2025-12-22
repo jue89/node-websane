@@ -12,7 +12,7 @@ use std::{
     thread::{self, sleep},
     time::{Duration, SystemTime},
 };
-use tiff::encoder::{TiffEncoder, colortype::RGB8};
+use tiff::encoder::{ImageEncoder, TiffEncoder, colortype::RGB8};
 
 fn configure_scanner(dev: &DeviceHandle, opts: &str) {
     let available_opts = dev.get_options().expect("Cannot read options");
@@ -99,10 +99,20 @@ fn main() {
 
         let mut no = 0;
         let mut scan = dev.start_scan();
-        while let Ok(mut image) = scan.next_image()
-            && let Ok(data) = image.read_to_vec()
-            && data.len() > 0
-        {
+
+        loop {
+            let Ok(mut image) = scan.next_image() else {
+                break;
+            };
+
+            let Ok(data) = image.read_to_vec() else {
+                break;
+            };
+
+            if data.is_empty() {
+                break;
+            }
+
             println!("next page: {:?} {:?}", image.parameters, data.len());
             assert!(
                 matches!(image.parameters.format, sane_scan::Frame::Rgb),
