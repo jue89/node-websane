@@ -44,7 +44,7 @@ in {
         };
         script = "${pkgs.batch-scan}/bin/batch-scan";
         serviceConfig.WorkingDirectory = "/tmp/scans";
-      }
+      };
     };
 
     hardware.sane.enable = true;
