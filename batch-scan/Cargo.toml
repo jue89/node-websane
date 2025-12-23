@@ -7,3 +7,7 @@ edition = "2024"
 sane-scan = { git = "https://github.com/jue89/sane-scan.git", branch = "main" }
 signal-hook = "0.3.18"
 tiff = "0.10.3"
+
+# workaround for Invalid Argument error on sane_start
+[profile.release]
+opt-level = 0
