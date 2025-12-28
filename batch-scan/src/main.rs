@@ -53,6 +53,9 @@ fn main() {
         .open_device_by_name(scanner_name.as_str())
         .expect("Cannot open scanner");
 
+    // Configure scanner
+    configure_scanner(&dev, scanner_opts.as_str());
+
     // Find scanner button option
     let scanner_button = CString::from_str(scanner_button.as_str()).expect("Invalid button name");
     let scanner_button = dev
@@ -61,9 +64,6 @@ fn main() {
         .into_iter()
         .find(|x| x.name == scanner_button)
         .expect("Cannot get scanner button option");
-
-    // Configure scanner
-    configure_scanner(&dev, scanner_opts.as_str());
 
     // Start signal listener
     let (usr1_tx, usr1_rx) = mpsc::channel();
@@ -99,10 +99,28 @@ fn main() {
 
         let mut no = 0;
         let mut scan = dev.start_scan();
-        while let Ok(mut image) = scan.next_image()
-            && let Ok(data) = image.read_to_vec()
-            && data.len() > 0
-        {
+
+        loop {
+            let mut image = match scan.next_image() {
+                Ok(img) => img,
+                Err(e) => {
+                    println!("{:?}", e);
+                    break;
+                }
+            };
+
+            let data = match image.read_to_vec() {
+                Ok(data) => data,
+                Err(e) => {
+                    println!("{:?}", e);
+                    break;
+                }
+            };
+
+            if data.is_empty() {
+                break;
+            }
+
             println!("next page: {:?} {:?}", image.parameters, data.len());
             assert!(
                 matches!(image.parameters.format, sane_scan::Frame::Rgb),
