@@ -119,7 +119,11 @@ module.exports = ({scanDir, scanDirWatch, uiPort}) => {
 	}));
 
 	app.post('/actions/scan', (req, rsp) => {
-		process.kill(process.pid, 'SIGUSR1');
+		fs.readdirSync('/proc')
+			.filter((x) => /[0-9]+/.test(x))
+			.filter((x) => fs.readFileSync(`/proc/${x}/cmdline`).toString().endsWith('/batch-scan\x00'))
+			.map((x) => parseInt(x))
+			.forEach((x) => process.kill(x, 'SIGUSR1'));
 	});
 
 	server.listen(uiPort);
