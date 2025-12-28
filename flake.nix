@@ -10,6 +10,7 @@
     packages = rec {
       websane = import ./websane pkgs;
       batch-scan = import ./batch-scan pkgs;
+      sort-tool = import ./sort-tool pkgs;
       default = websane;
     };
   }) // {
