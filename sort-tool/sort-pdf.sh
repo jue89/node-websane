@@ -14,9 +14,12 @@ while [ -n "$1" ]; do
     DATE="$(exiftool -b -CreateDate "$FILE" | tr : - | cut -d" " -f1)"
     AUTHOR="$(exiftool -b -Author "$FILE")"
     TITLE="$(exiftool -b -Title "$FILE")"
-    DST="$AUTHOR/$DATE $TITLE.pdf"
+
+    DST_DIR="$DST_BASE/$AUTHOR"
+    DST="$DST_DIR/$DATE $TITLE.pdf"
 
     echo $DST
 
-    mv "$FILE" "$DST_BASE/$DST"
+    mkdir -p "$DST_DIR"
+    mv "$FILE" "$DST"
 done
