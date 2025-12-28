@@ -12,5 +12,8 @@
       batch-scan = import ./batch-scan pkgs;
       default = websane;
     };
-  });
+  }) // {
+    overlays.default = import ./overlay.nix;
+    nixosModules.default = import ./module.nix;
+  };
 }

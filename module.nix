@@ -17,21 +17,39 @@
       default = "/tmp/scans";
     };
   };
+  websane = import ./websane pkgs;
+  batch-scan = import ./batch-scan pkgs;
 in {
   options.services.websane = opts;
 
   config = mkIf cfg.enable {
-    systemd = {
-      services.websane = {
+    systemd.services = {
+      websane = {
+        preStart = "mkdir -p ${cfg.scandir}";
         environment = {
-          UIPORT = cfg.port;
-          SCANIMAGE_BIN = "${pkgs.sane-backends}/bin/scanimage";
+          UIPORT = toString cfg.port;
           CONVERT_BIN = "${pkgs.imagemagick}/bin/convert";
           SCANDIR = cfg.scandir;
         };
-        script = "${pkgs.websane}/bin/websane";
+        script = "${websane}/bin/websane";
+        wantedBy = [ "multi-user.target" ];
+      };
+
+      batch-scan = {
+        preStart = "mkdir -p ${cfg.scandir}";
+        environment = {
+          SCANNER_NAME = "fujitsu:ScanSnap iX500:53474";
+          SCANNER_OPTS = "resolution=300,page-height=297.0,mode=Color,source=ADF Duplex,page-width=205";
+          SCANNER_BUTTON = "scan";
+        };
+        script = "${batch-scan}/bin/batch-scan";
+        serviceConfig.WorkingDirectory = cfg.scandir;
       };
     };
+
+    services.udev.extraRules = ''
+      ACTION=="add", ENV{libsane_matched}=="yes", TAG+="systemd", ENV{SYSTEMD_WANTS}+="batch-scan.service"
+    '';
 
     hardware.sane.enable = true;
   };
